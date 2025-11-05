@@ -1,11 +1,13 @@
 // src/Pages/HomeScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { globalStyles, COLORS } from '../Styles/theme';
+import { COLORS } from '../Styles/theme';
 import PrimaryButton from '../Components/PrimaryButton';
 import { signOut } from '../Config/firebaseAuth';
 import axios from 'axios';
 import { MaterialIcons } from '@expo/vector-icons';
+import { db } from '../Config/firebaseFirestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const FRASES_API_URL = 'https://souzamatheush.github.io/FrasesAPI/frases.json';
 const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
@@ -14,7 +16,8 @@ const MONTH_NAMES = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
-const HomeScreen = ({ user, onLogout, navigate, habits }) => {
+const HomeScreen = ({ user, onLogout, navigate }) => {
+  const [habits, setHabits] = useState([]);
   const [insight, setInsight] = useState("Clique em 'Novo Insight' para uma dose de motivação!");
   const [loadingInsight, setLoadingInsight] = useState(false);
   const [allFrases, setAllFrases] = useState([]);
@@ -30,6 +33,20 @@ const HomeScreen = ({ user, onLogout, navigate, habits }) => {
     };
     loadFrases();
   }, []);
+
+  useEffect(() => {
+    const fetchHabits = async () => {
+      try {
+        const q = query(collection(db, "habits"), where("userId", "==", user.uid));
+        const snapshot = await getDocs(q);
+        const loaded = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setHabits(loaded);
+      } catch (error) {
+        console.error("Erro ao carregar hábitos:", error);
+      }
+    };
+    fetchHabits();
+  }, [user]);
 
   const fetchNewInsight = () => {
     if (allFrases.length > 0) {
@@ -54,20 +71,14 @@ const HomeScreen = ({ user, onLogout, navigate, habits }) => {
     }
   };
 
-  // === Função principal do calendário ===
   const renderCalendarGrid = () => {
     const today = new Date();
     const year = today.getFullYear();
-    const month = today.getMonth(); // 0 = Janeiro, 10 = Novembro
+    const month = today.getMonth();
 
-    // Primeiro e último dia do mês atual
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
-
-    // Descobre o dia da semana em que o mês começa (0 = domingo)
     const startDayIndex = firstDayOfMonth.getDay();
-
-    // Quantos quadrados o calendário precisa
     const totalDays = lastDayOfMonth.getDate();
     const totalCells = Math.ceil((startDayIndex + totalDays) / 7) * 7;
 
@@ -116,10 +127,7 @@ const HomeScreen = ({ user, onLogout, navigate, habits }) => {
 
   return (
     <View style={styles.screen}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           {/* Cabeçalho */}
           <View style={styles.header}>
@@ -129,7 +137,6 @@ const HomeScreen = ({ user, onLogout, navigate, habits }) => {
             </TouchableOpacity>
           </View>
 
-          {/* Mês atual */}
           <Text style={styles.monthTitle}>{currentMonthName}</Text>
 
           {/* Calendário */}
@@ -142,7 +149,7 @@ const HomeScreen = ({ user, onLogout, navigate, habits }) => {
             <View style={styles.calendarGrid}>{renderCalendarGrid()}</View>
           </View>
 
-          {/* Insight + Botão */}
+          {/* Insight */}
           <View style={styles.insightSection}>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Insight do Dia</Text>
@@ -158,7 +165,7 @@ const HomeScreen = ({ user, onLogout, navigate, habits }) => {
             />
           </View>
 
-          {/* Botão de sair */}
+          {/* Logout */}
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutButtonText}>Sair da Conta</Text>
             <MaterialIcons name="logout" size={20} color={COLORS.SECONDARY} style={{ marginLeft: 6 }} />
