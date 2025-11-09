@@ -1,129 +1,132 @@
-// src/pages/LoginScreen.js
+// src/Pages/LoginScreen.js
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { globalStyles, COLORS } from '../Styles/theme';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { COLORS } from '../Styles/theme';
 import AuthInput from '../Components/AuthInput';
 import PrimaryButton from '../Components/PrimaryButton';
-import { signInWithEmailAndPassword, getFriendlyErrorMessage } from '../Config/firebaseAuth';
+import { signInWithEmailAndPassword } from '../Config/firebaseAuth';
 
-/**
- * Tela de Login com a lógica de autenticação Firebase. (Página 3 do PDF).
- */
 const LoginScreen = ({ navigate, onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  
-  // Função de Login
+  const [loading, setLoading] = useState(false);
+
   const handleLogin = async () => {
-    setError('');
-    setIsLoading(true);
-
-    // Validação básica
-    if (!email || !password) {
-      setError('Preencha todos os campos.');
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      // Chama a função de login (real ou mockada)
-      const userCredential = await signInWithEmailAndPassword(email, password);
-      
-      // Se for bem-sucedido, chama o callback para atualizar o estado global
-      onLoginSuccess(userCredential.user);
-      
-      console.log('Login bem-sucedido:', userCredential.user.email);
-
-    } catch (err) {
-      const friendlyMessage = getFriendlyErrorMessage(err.code || err.message);
-      setError(friendlyMessage);
-      console.error('Erro de Login:', err.message);
+      setLoading(true);
+      await signInWithEmailAndPassword(email, password);
+      onLoginSuccess();
+    } catch (error) {
+      console.error('Erro ao fazer login:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
-
+  
   return (
-    <View style={globalStyles.container}>
-      <View style={globalStyles.authContainer}>
-        <Text style={globalStyles.title}>Bem-vindo de volta!</Text>
-        <Text style={globalStyles.subtitle}>
-          Faça o login para continuar
-        </Text>
-        
-        {error ? <Text style={globalStyles.errorText}>{error}</Text> : null}
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.title}>Bem-vindo de volta</Text>
+          <Text style={styles.subtitle}>Faça o login para continuar</Text>
 
-        <AuthInput
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-        
-        <AuthInput
-          placeholder="Senha"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        
-        {/* Opções (Lembrar de mim e Esqueceu a senha?) */}
-        <View style={styles.optionsContainer}>
-          <Text style={styles.optionText}>Lembre de mim</Text>
-          <TouchableOpacity>
-            <Text style={globalStyles.linkText}>Esqueceu a senha?</Text>
-          </TouchableOpacity>
-        </View>
+          <AuthInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+          <AuthInput
+            placeholder="Senha"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
 
-        <PrimaryButton
-          title="Login"
-          onPress={handleLogin}
-          loading={isLoading}
-          disabled={!email || !password}
-          style={styles.loginButton}
-        />
+          <View style={styles.optionsRow}>
+            <Text style={styles.rememberText}>Lembre de mim</Text>
+            <TouchableOpacity>
+              <Text style={styles.forgotText}>Esqueceu a senha?</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* Link para Cadastro */}
-        <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>Não tem uma conta?</Text>
-          <TouchableOpacity onPress={() => navigate('Register')}>
-            <Text style={globalStyles.linkText}>Cadastre-se</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+          <PrimaryButton
+            title="Login"
+            onPress={handleLogin}
+            loading={loading}
+          />
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Não tem uma conta? </Text>
+            <TouchableOpacity onPress={() => navigate('Register')}>
+              <Text style={styles.footerLink}>Cadastre-se</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  optionsContainer: {
-    width: '100%',
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.BACKGROUND,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.BACKGROUND,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
+  title: {
+    color: COLORS.WHITE,
+    fontSize: 26,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  subtitle: {
+    color: COLORS.TEXT_LIGHT,
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  optionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 5,
+    marginBottom: 25,
   },
-  optionText: {
-    color: COLORS.TEXT_LIGHT,
-    fontSize: 14,
+  rememberText: {
+    color: COLORS.WHITE,
   },
-  loginButton: {
-    marginTop: 20,
+  forgotText: {
+    color: COLORS.SECONDARY,
+    fontWeight: 'bold',
   },
-  registerContainer: {
+  footer: {
     flexDirection: 'row',
-    marginTop: 40,
     justifyContent: 'center',
-    alignItems: 'center',
+    marginTop: 25,
   },
-  registerText: {
+  footerText: {
     color: COLORS.TEXT_LIGHT,
-    fontSize: 16,
-    marginRight: 10,
-  }
+  },
+  footerLink: {
+    color: COLORS.SECONDARY,
+    fontWeight: 'bold',
+  },
 });
 
 export default LoginScreen;

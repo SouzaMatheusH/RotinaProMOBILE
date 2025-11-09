@@ -16,7 +16,7 @@ const MONTH_NAMES = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
-const HomeScreen = ({ user, onLogout, navigate }) => {
+const HomeScreen = ({ user, onLogout, navigate, progressByDate }) => {
   const [habits, setHabits] = useState([]);
   const [insight, setInsight] = useState("Clique em 'Novo Insight' para uma dose de motivação!");
   const [loadingInsight, setLoadingInsight] = useState(false);
@@ -71,33 +71,54 @@ const HomeScreen = ({ user, onLogout, navigate }) => {
     }
   };
 
+  const getSquareColor = (isActiveDay, progress = 0) => {
+    if (!isActiveDay) return COLORS.BACKGROUND;
+    if (progress === 0) return '#444';
+    if (progress <= 33) return COLORS.TERTIARY;
+    if (progress <= 66) return COLORS.SECONDARY;
+    if (progress < 100) return '#8A5AD6';
+    return COLORS.PRIMARY;
+  };
+
   const renderCalendarGrid = () => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
-
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
-    const startDayIndex = firstDayOfMonth.getDay();
+    const startDayIndex = firstDayOfMonth.getDay(); // 0 (Sun) - 6 (Sat)
     const totalDays = lastDayOfMonth.getDate();
     const totalCells = Math.ceil((startDayIndex + totalDays) / 7) * 7;
 
     const days = [];
     for (let i = 0; i < totalCells; i++) {
-      const currentDate = new Date(year, month, i - startDayIndex + 1);
+      const dayNumber = i - startDayIndex + 1;
+      const currentDate = new Date(year, month, dayNumber);
       const isCurrentMonth = currentDate.getMonth() === month;
       const isToday = currentDate.toDateString() === today.toDateString();
-
       const dayIndex = currentDate.getDay();
-      const isActiveDay = habits.some(habit => habit.recurrence.includes(dayIndex));
+      const isActiveDay = isCurrentMonth && habits.some(habit => habit.recurrence.includes(dayIndex));
+      const dateISO = currentDate.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+      const progressObj = progressByDate?.[dateISO] || null;
+      const progress = progressObj?.percent || 0;
 
       let backgroundColor = COLORS.BACKGROUND;
       let borderColor = COLORS.TEXT_LIGHT + '25';
       let borderWidth = 1;
 
-      if (isActiveDay && isCurrentMonth) {
-        backgroundColor = COLORS.PRIMARY;
-        borderColor = COLORS.PRIMARY;
+      if (isCurrentMonth) {
+        if (isActiveDay) {
+          // se tem hábito naquele dia, inicialmente cinza (se progresso 0) ou cor conforme progresso
+          backgroundColor = getSquareColor(isActiveDay, progress);
+          borderColor = backgroundColor;
+        } else {
+          backgroundColor = COLORS.BACKGROUND;
+          borderColor = COLORS.TEXT_LIGHT + '25';
+        }
+      } else {
+        // Placeholder: mantém espaço no grid para alinhamento correto
+        backgroundColor = 'transparent';
+        borderColor = 'transparent';
       }
 
       if (isToday && isCurrentMonth) {
@@ -105,17 +126,26 @@ const HomeScreen = ({ user, onLogout, navigate }) => {
         borderWidth = 2;
       }
 
-      if (!isCurrentMonth) {
-        backgroundColor = 'transparent';
-        borderColor = 'transparent';
-      }
-
       days.push(
-        <View key={i} style={styles.calendarDayContainer}>
+        <TouchableOpacity
+          key={i}
+          style={styles.calendarDayContainer}
+          onPress={() => {
+            if (isCurrentMonth && isActiveDay) {
+              navigate('Progression', {
+                dateISO,
+                habits,
+                dayIndex,
+                savedProgress: progressObj || { percent: 0, doneIds: [] },
+              });
+            }
+          }}
+          activeOpacity={isCurrentMonth && isActiveDay ? 0.7 : 1}
+        >
           <View style={[styles.calendarDaySquare, { backgroundColor, borderColor, borderWidth }]}>
             {isCurrentMonth && <Text style={styles.dayNumber}>{currentDate.getDate()}</Text>}
           </View>
-        </View>
+        </TouchableOpacity>
       );
     }
 
@@ -129,7 +159,6 @@ const HomeScreen = ({ user, onLogout, navigate }) => {
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* Cabeçalho */}
           <View style={styles.header}>
             <Text style={styles.title}>Hábitos</Text>
             <TouchableOpacity style={styles.newHabitButton} onPress={() => navigate('NewHabit')}>
@@ -139,7 +168,6 @@ const HomeScreen = ({ user, onLogout, navigate }) => {
 
           <Text style={styles.monthTitle}>{currentMonthName}</Text>
 
-          {/* Calendário */}
           <View style={styles.calendarContainer}>
             <View style={styles.weekDaysRow}>
               {WEEK_DAYS.map((day, index) => (
@@ -149,7 +177,6 @@ const HomeScreen = ({ user, onLogout, navigate }) => {
             <View style={styles.calendarGrid}>{renderCalendarGrid()}</View>
           </View>
 
-          {/* Insight */}
           <View style={styles.insightSection}>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Insight do Dia</Text>
@@ -165,7 +192,6 @@ const HomeScreen = ({ user, onLogout, navigate }) => {
             />
           </View>
 
-          {/* Logout */}
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutButtonText}>Sair da Conta</Text>
             <MaterialIcons name="logout" size={20} color={COLORS.SECONDARY} style={{ marginLeft: 6 }} />

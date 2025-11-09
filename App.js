@@ -2,18 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-// Importa as telas
 import WelcomeScreen from './src/Pages/WelcomeScreen';
 import LoginScreen from './src/Pages/LoginScreen';
 import RegisterScreen from './src/Pages/RegisterScreen';
 import HomeScreen from './src/Pages/HomeScreen';
 import LoadingScreen from './src/Pages/LoadingScreen';
 import NewHabitScreen from './src/Pages/NewHabitScreen';
+import ProgressionScreen from './src/Pages/ProgressionScreen';
 
-// Importa estilos e cores
 import { globalStyles, COLORS } from './src/Styles/theme';
-
-// Importa a função de monitoramento do Firebase
 import { onAuthStateChanged } from './src/Config/firebaseAuth';
 
 const SCREENS = {
@@ -22,6 +19,7 @@ const SCREENS = {
   REGISTER: 'Register',
   HOME: 'Home',
   NEW_HABIT: 'NewHabit',
+  PROGRESSION: 'Progression',
 };
 
 const App = () => {
@@ -29,40 +27,29 @@ const App = () => {
   const [currentScreen, setCurrentScreen] = useState(SCREENS.WELCOME);
   const [isLoading, setIsLoading] = useState(true);
   const [showLoadingAnimation, setShowLoadingAnimation] = useState(false);
+  const [routeParams, setRouteParams] = useState(null);
 
-  // 🔹 Monitoramento do Firebase Auth
+  // 🔹 Estado global de progresso (dia → { percent, doneIds })
+  const [dailyProgress, setDailyProgress] = useState({});
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged((authUser) => {
       setUser(authUser);
       setIsLoading(false);
-
-      if (authUser) {
-        if (!showLoadingAnimation) {
-          setCurrentScreen(SCREENS.HOME);
-        }
-      } else {
-        setCurrentScreen(SCREENS.WELCOME);
-      }
+      if (authUser) setCurrentScreen(SCREENS.HOME);
+      else setCurrentScreen(SCREENS.WELCOME);
     });
-
     return () => unsubscribe();
-  }, [showLoadingAnimation]);
+  }, []);
 
-  const navigate = (screenName) => {
+  const navigate = (screenName, params = null) => {
+    setRouteParams(params);
     setCurrentScreen(screenName);
   };
 
-  const handleAuthSuccess = () => {
-    // Mostra a animação de transição
-    setShowLoadingAnimation(true);
-  };
+  const handleAuthSuccess = () => setShowLoadingAnimation(true);
+  const handleLogout = () => setCurrentScreen(SCREENS.WELCOME);
 
-  const handleLogout = () => {
-    // Ao sair, o listener do Firebase vai definir user = null
-    setCurrentScreen(SCREENS.WELCOME);
-  };
-
-  // 🔹 Tela de carregamento inicial
   if (isLoading) {
     return (
       <View style={[globalStyles.container, styles.centerScreen]}>
@@ -73,25 +60,32 @@ const App = () => {
     );
   }
 
-  // 🔹 Roteamento das telas
   let ContentComponent;
 
   if (showLoadingAnimation) {
     ContentComponent = (
-      <LoadingScreen
-        onAnimationFinish={() => {
-          setShowLoadingAnimation(false);
-        }}
-      />
+      <LoadingScreen onAnimationFinish={() => setShowLoadingAnimation(false)} />
     );
   } else if (user) {
-    // Usuário logado
     switch (currentScreen) {
       case SCREENS.NEW_HABIT:
         ContentComponent = (
-          <NewHabitScreen
+          <NewHabitScreen navigate={navigate} user={user} />
+        );
+        break;
+
+      case SCREENS.PROGRESSION:
+        ContentComponent = (
+          <ProgressionScreen
+            route={{ params: routeParams }}
             navigate={navigate}
-            user={user} // ✅ Passa o usuário para salvar hábitos no Firestore
+            user={user}
+            onProgressChange={(dateKey, data) => {
+              setDailyProgress((prev) => ({
+                ...prev,
+                [dateKey]: data, // { percent, doneIds }
+              }));
+            }}
           />
         );
         break;
@@ -103,32 +97,25 @@ const App = () => {
             user={user}
             onLogout={handleLogout}
             navigate={navigate}
+            progressByDate={dailyProgress}
           />
         );
         break;
     }
   } else {
-    // Usuário deslogado
     switch (currentScreen) {
       case SCREENS.LOGIN:
         ContentComponent = (
-          <LoginScreen
-            navigate={navigate}
-            onLoginSuccess={handleAuthSuccess}
-          />
+          <LoginScreen navigate={navigate} onLoginSuccess={handleAuthSuccess} />
         );
         break;
 
       case SCREENS.REGISTER:
         ContentComponent = (
-          <RegisterScreen
-            navigate={navigate}
-            onRegisterSuccess={handleAuthSuccess}
-          />
+          <RegisterScreen navigate={navigate} onRegisterSuccess={handleAuthSuccess} />
         );
         break;
 
-      case SCREENS.WELCOME:
       default:
         ContentComponent = <WelcomeScreen navigate={navigate} />;
         break;

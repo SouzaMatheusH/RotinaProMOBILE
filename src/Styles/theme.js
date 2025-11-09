@@ -1,29 +1,38 @@
 // src/styles/theme.js
 import { StyleSheet, Dimensions } from 'react-native';
-
 const { width } = Dimensions.get('window');
+
+// NOVO: Definição e Exportação do objeto SCREENS
+export const SCREENS = {
+  WELCOME: 'Welcome',
+  LOGIN: 'Login',
+  REGISTER: 'Register',
+  HOME: 'Home',
+  NEW_HABIT: 'NewHabit',
+  PROGRESSION: 'Progression', // <-- NOVO
+};
 
 // Cores baseadas no seu PDF
 export const COLORS = {
-  BACKGROUND: '#000000', // Preto sólido
-  PRIMARY: '#5B21B6',    // Roxo Principal (Escuro)
-  SECONDARY: '#A78BFA',  // Roxo Secundário (Claro)
-  TERTIARY: '#C4B5FD',   // Roxo Terciário (Mais Claro)
+  BACKGROUND: '#000000',
+  PRIMARY: '#5B21B6', // Roxo Principal (Forte)
+  ROXO_FRACO: '#8A5AD6', // Roxo Fraco (Intermediário - para progresso parcial) <-- NOVO
+  SECONDARY: '#A78BFA', // Roxo Secundário (Claro)
+  TERTIARY: '#C4B5FD',
   WHITE: '#FFFFFF',
   TEXT_LIGHT: '#E5E5E5',
   TEXT_DARK: '#1F1F1F',
   ERROR: '#DC2626',
 };
-//... (o restante do globalStyles permanece o mesmo)
+
 export const globalStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.BACKGROUND,
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: 20, // Removendo o padding geral para controle em cada tela
+    // Removido o justifyContent: 'center' para permitir scroll nas telas
   },
-  // ... (restante do globalStyles)
+  // ... (Resto dos seus estilos globais)
   title: {
     fontSize: 28,
     fontWeight: '700',
