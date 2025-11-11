@@ -1,4 +1,3 @@
-// src/config/firebaseConfig.js
 const firebaseConfig = {
   apiKey: "AIzaSyB6uFEcx-cJwzD8tVkHcHPLUho9HirKsGo",
   authDomain: "autenticacao-189e7.firebaseapp.com",

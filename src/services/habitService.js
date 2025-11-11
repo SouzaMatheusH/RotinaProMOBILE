@@ -1,8 +1,6 @@
-// src/services/habitService.js
-
 import { getAuth } from 'firebase/auth'; 
 import { collection, addDoc, query, where, onSnapshot } from 'firebase/firestore'; 
-import { db } from '../Config/firebaseConfig'; // Importa o Firestore inicializado
+import { db } from '../Config/firebaseConfig';
 
 /**
  * Salva um novo hábito no Firestore, atrelado ao UID do usuário logado.
@@ -18,7 +16,7 @@ export async function saveNewHabitToFirestore(habitData) {
 
     const habitToSave = {
         ...habitData,
-        userId: user.uid, // CHAVE MESTRA: Garante a exclusividade do dado!
+        userId: user.uid,
         createdAt: new Date(),
     };
 
@@ -40,13 +38,11 @@ export async function saveNewHabitToFirestore(habitData) {
  * @returns {function} - Função de 'unsubscribe' para limpar o listener.
  */
 export function subscribeToUserHabits(userId, callback) {
-    // Cria a query: Coleção 'habitos' ONDE o campo 'userId' é igual ao ID do usuário
     const habitsQuery = query(
         collection(db, 'habitos'),
         where("userId", "==", userId)
     );
 
-    // onSnapshot: Cria um listener em tempo real
     const unsubscribe = onSnapshot(habitsQuery, (snapshot) => {
         const habitsList = [];
         snapshot.forEach((doc) => {

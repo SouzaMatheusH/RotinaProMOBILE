@@ -1,12 +1,8 @@
-// src/components/PrimaryButton.js
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { COLORS } from '../Styles/theme';
 
 
-/**
- * Componente de Botão Principal com o estilo do ROTINA PRO.
- */
 const PrimaryButton = ({ title, onPress, disabled, loading = false, style }) => {
   return (
     <TouchableOpacity

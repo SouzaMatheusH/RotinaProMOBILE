@@ -1,4 +1,3 @@
-// src/Pages/NewHabitScreen.js
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { globalStyles, COLORS } from '../Styles/theme';

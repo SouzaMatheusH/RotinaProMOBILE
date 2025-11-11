@@ -1,4 +1,3 @@
-// src/config/firebaseAuth.js
 import { initializeApp } from 'firebase/app';
 import {
   initializeAuth,
@@ -20,17 +19,14 @@ WebBrowser.maybeCompleteAuthSession();
 // Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 
-// EXPORTAÇÃO CRÍTICA: Inicializa e exporta o objeto auth
 export const auth = initializeAuth(app, { 
   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
 
-// A sua função wrapper de monitoramento que usa a instância 'auth'
 export function onAuthStateChanged(callback) {
   return fbOnAuthStateChanged(auth, callback);
 }
 
-// Mapeamento de erros comuns do Firebase para mensagens amigáveis.
 export function getFriendlyErrorMessage (errorCode) {
  switch (errorCode) {
  case 'auth/user-not-found':
@@ -47,7 +43,6 @@ export function getFriendlyErrorMessage (errorCode) {
  }
 }
 
-// Funções de Login, Cadastro, Logout (mantidas do seu PDF)
 export async function signInWithEmailAndPassword(email, password) {
  return await fbSignInUser (auth, email, password);
 }
@@ -60,8 +55,6 @@ export async function signOut() {
  return await fbSignOut(auth);
 }
 
-// Função de Login com Google (Incompleta no PDF original, mas deixo a estrutura)
 export async function signinWithGoogle() {
- // Esta função precisa do request, response, promptAsync que estão no WelcomeScreen
  throw new Error("A função signinWithGoogle deve ser chamada do WelcomeScreen para usar o hook do Expo.");
 }

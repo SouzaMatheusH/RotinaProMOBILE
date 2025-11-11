@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
@@ -29,7 +28,6 @@ const App = () => {
   const [showLoadingAnimation, setShowLoadingAnimation] = useState(false);
   const [routeParams, setRouteParams] = useState(null);
 
-  // 🔹 Estado global de progresso (dia → { percent, doneIds })
   const [dailyProgress, setDailyProgress] = useState({});
 
   useEffect(() => {

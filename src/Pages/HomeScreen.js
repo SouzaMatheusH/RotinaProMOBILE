@@ -1,4 +1,3 @@
-// src/Pages/HomeScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { COLORS } from '../Styles/theme';
@@ -108,7 +107,6 @@ const HomeScreen = ({ user, onLogout, navigate, progressByDate }) => {
 
       if (isCurrentMonth) {
         if (isActiveDay) {
-          // se tem hábito naquele dia, inicialmente cinza (se progresso 0) ou cor conforme progresso
           backgroundColor = getSquareColor(isActiveDay, progress);
           borderColor = backgroundColor;
         } else {
@@ -116,7 +114,6 @@ const HomeScreen = ({ user, onLogout, navigate, progressByDate }) => {
           borderColor = COLORS.TEXT_LIGHT + '25';
         }
       } else {
-        // Placeholder: mantém espaço no grid para alinhamento correto
         backgroundColor = 'transparent';
         borderColor = 'transparent';
       }

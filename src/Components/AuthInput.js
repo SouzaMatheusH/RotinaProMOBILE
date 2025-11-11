@@ -1,12 +1,8 @@
-// src/components/AuthInput.js
 import React from 'react';
 import { TextInput, View, StyleSheet } from 'react-native';
 import { COLORS } from '../Styles/theme';
 
 
-/**
- * Componente de Input estilizado para as telas de autenticação.
- */
 const AuthInput = ({ placeholder, value, onChangeText, secureTextEntry, keyboardType }) => {
   return (
     <View style={styles.inputContainer}>

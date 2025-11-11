@@ -1,4 +1,3 @@
-// src/Pages/ProgressionScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { COLORS } from '../Styles/theme';
@@ -17,7 +16,6 @@ const WEEKDAY_PT = [
 ];
 
 const ProgressionScreen = ({ route, navigate, onProgressChange }) => {
-  // Agora esperamos receber route.params.dateISO (YYYY-MM-DD)
   const { dateISO, habits, dayIndex, savedProgress } = route.params;
 
   const [tasks, setTasks] = useState([]);
@@ -77,7 +75,6 @@ const ProgressionScreen = ({ route, navigate, onProgressChange }) => {
     }
   };
 
-  // Formata para exibição:
   const dateObj = dateISO ? new Date(dateISO + 'T00:00:00') : new Date();
   const weekdayName = WEEKDAY_PT[dateObj.getDay()];
   const dayNumber = String(dateObj.getDate()).padStart(2, '0');
@@ -91,13 +88,10 @@ const ProgressionScreen = ({ route, navigate, onProgressChange }) => {
         <MaterialIcons name="arrow-back" size={28} color={COLORS.WHITE} />
       </TouchableOpacity>
 
-      {/* Semana por extenso (pequeno e cinza) */}
       <Text style={styles.weekdayText}>{weekdayName}</Text>
 
-      {/* Data grande abaixo */}
       <Text style={styles.dateText}>{displayDateShort}</Text>
 
-      {/* Barra de progresso */}
       <View style={styles.progressBarContainer}>
         <View style={styles.progressBarBackground}>
           <View
@@ -133,8 +127,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.BACKGROUND, padding: 20 },
   backButton: { marginTop: 30, marginBottom: 6 },
   weekdayText: {
-    color: '#9CA3AF', // cinza
-    fontSize: 12, // pequeno
+    color: '#9CA3AF',
+    fontSize: 12,
     textTransform: 'lowercase',
     marginBottom: 4,
   },
